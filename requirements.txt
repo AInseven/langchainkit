@@ -1,3 +1,4 @@
+langchain==0.3.25
 langchain-openai==0.3.16
 langchain-community==0.3.23
 langchain-deepseek==0.1.3

@@ -2,7 +2,7 @@
 
 import os
 from langchain_deepseek import ChatDeepSeek
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain_openai.chat_models.base import BaseChatModel
 from dotenv import load_dotenv
 
@@ -112,8 +112,9 @@ class GeneralLLM:
     def gpt_4o(self)->BaseChatModel:
         if self._gpt_4o is None:
             self._gpt_4o = ChatOpenAI(
-                model="gpt-4o",
-                api_key=os.getenv("OPENAI_API_KEY"),
+                model="openai/gpt-4o",
+                api_key=os.getenv("OPENROUTER_API_KEY"),
+                base_url="https://openrouter.ai/api/v1",
                 streaming=True,
                 max_retries=5
             )
@@ -122,32 +123,5 @@ class GeneralLLM:
 
 
 if __name__ == '__main__':
-    from langfuse.langchain import CallbackHandler
-
-    handler = CallbackHandler()
-    llm=LocalLLM().qwen3_14b_awq_think
-    response = llm.invoke(
-         "Hello",
-        config={
-            "callbacks": [handler],
-            "metadata": {
-                "langfuse_user_id": "user_123",
-                "langfuse_session_id": "session_456",
-                "langfuse_tags": ["langchain"]
-            }
-        }
-    )
-    chunks = []
-    config={
-            "callbacks": [handler],
-            "metadata": {
-                "langfuse_user_id": "user_123",
-                "langfuse_session_id": "session_456",
-                "langfuse_tags": ["langchain"]
-            }
-        }
-    for chunk in llm.stream("你好",config=config):
-        chunks.append(chunk)
-        if chunk.content: print(chunk.content, end="|", flush=True)
-        if chunk.additional_kwargs.get("reasoning_content"): print(chunk.additional_kwargs.get("reasoning_content"),
-                                                                   end="|", flush=True)
+    llm=GeneralLLM().gpt_4o
+    print(llm.invoke('hello'))

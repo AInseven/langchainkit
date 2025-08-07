@@ -1,26 +1,21 @@
 # LangChainKit
 
-A Python toolkit for working with Large Language Models (LLMs) using LangChain. It provides structured output parsing and multi-provider LLM access.
+LangChainKit makes it easier to work with Qwen3 models via [vLLM](https://github.com/vllm-project/vllm), and simplifies the process of prompting LLMs to return structured outputs using [LangChain](https://github.com/langchain-ai/langchain) and [LangFuse](https://github.com/langfuse/langfuse).
 
-## Features
+--- 
 
-- **Multi-provider LLM access**: Support for local/self-hosted, cloud API, and commercial LLM providers
-- **Structured output parsing**: Force LLM outputs into Pydantic models with built-in retry logic
-- **Batch processing**: Concurrent batch requests with configurable concurrency
-- **Built-in observability**: Integration with Langfuse for tracking and monitoring
-- **Lazy initialization**: Efficient resource management with lazy loading
+## 🚀 Features
 
-## Supported LLM Providers
+- 🔧 **Simplified Qwen3 + vLLM integration**  
+  Automatically configure `enable_thinking` and other complex settings for Qwen3 models when using vLLM.
 
-### Local/Self-hosted
-- Qwen3 variants with vLLM
+- 🧠 **Structured Output via LangChain**  
+  Easily prompt the LLM to generate structured outputs, including batch prompting support, with minimal setup.
 
-### Cloud API
-- DashScope Qwen3-235B
+- 📊 **LangFuse Integration**  
+  Track and evaluate LLM performance using LangFuse, without writing boilerplate code.
 
-### Commercial APIs
-- DeepSeek
-- OpenAI GPT-4o
+---
 
 ## Installation
 
@@ -33,15 +28,15 @@ pip install langchainkit
 ### Basic Usage
 
 ```python
-from langchainkit import LocalLLM, ApiLLM, GeneralLLM
+from dotenv import load_dotenv
 
-# Initialize different LLM providers
-local_llm = LocalLLM(model="qwen3-32b", api_base="http://localhost:8000/v1")
-api_llm = ApiLLM(model="qwen3-235b")
-gpt_llm = GeneralLLM(model="gpt-4o")
+load_dotenv() # load .env file
 
-# Use the LLMs
-response = local_llm.invoke("Hello, world!")
+from langchainkit import LocalLLM
+
+llm = LocalLLM().qwen3_14b_awq_think
+res= llm.invoke('hello')
+print(res.content) # Hello! How can I assist you today? 😊
 ```
 
 ### Structured Output
@@ -55,65 +50,44 @@ class Response(BaseModel):
     confidence: float
 
 result = prompt_parsing(
-    "What is the capital of France?",
-    Response,
-    llm=local_llm
+    model=Response,
+    failed_model=Response(answer="no_answer", confidence=0.0),
+    query="What is the capital of France?",
+    llm=llm
 )
 print(result.answer)  # "Paris"
-print(result.confidence)  # 0.95
+print(result.confidence)  # 1.0
+
+result = prompt_parsing(
+    model=Response,
+    failed_model=Response(answer="no_answer", confidence=0.0),
+    query=["What is the capital of France?",
+           "What is the capital of Germany?",
+           "What is the capital of Italy?"],
+    llm=llm
+)
+for each in result:
+    print(each.answer)
+    print(each.confidence)
+# Paris
+# 0.95
+# Berlin
+# 0.95
+# Rome
+# 1.0
 ```
 
 ## Configuration
 
-Set up your environment variables:
+Set up your environment variables in .env file:
 
 ```bash
-# For local vLLM instances
-export LOCAL_VLLM_API_KEY="your-api-key"
-
-# For cloud APIs
-export DASHSCOPE_API_KEY="your-dashscope-key"
-export DEEPSEEK_API_KEY="your-deepseek-key"
-export OPENAI_API_KEY="your-openai-key"
+LOCAL_VLLM_BASE_URL=http://172.20.14.28:8000/v1
+LOCAL_VLLM_API_KEY=your vLLM api key
+LANGFUSE_SECRET_KEY=your langfuse secret key
+LANGFUSE_PUBLIC_KEY=your langfuse public key
+LANGFUSE_HOST=your langfuse host
 ```
-
-## Development
-
-### Installation from Source
-
-```bash
-git clone https://github.com/AInseven/langchainkit.git
-cd langchainkit
-pip install -e .
-```
-
-### Running Tests
-
-```bash
-pip install -e ".[dev]"
-pytest tests/
-```
-
-### Code Quality
-
-```bash
-# Format code
-black langchainkit/
-
-# Sort imports
-isort langchainkit/
-
-# Lint code
-flake8 langchainkit/
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 

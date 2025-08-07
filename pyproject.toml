@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "langchainkit"
 version = "0.1.0"
-description = "A Python toolkit for working with Large Language Models (LLMs) using LangChain"
+description = "LangChainKit makes it easier to work with Qwen3 models via vLLM, and simplifies the process of prompting LLMs to return structured outputs using LangChain and Langfuse."
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"},
+    {name = "AInseven", email = "your.email@example.com"},
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
