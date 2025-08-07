@@ -44,9 +44,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/langchainkit"
-Repository = "https://github.com/yourusername/langchainkit.git"
-Issues = "https://github.com/yourusername/langchainkit/issues"
+Homepage = "https://github.com/AInseven/langchainkit"
+Repository = "https://github.com/AInseven/langchainkit.git"
+Issues = "https://github.com/AInseven/langchainkit/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
