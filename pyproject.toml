@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langchainkit"
-version = "0.1.0"
+version = "0.1.1"
 description = "LangChainKit makes it easier to work with Qwen3 models via vLLM, and simplifies the process of prompting LLMs to return structured outputs using LangChain and Langfuse."
 readme = "README.md"
 requires-python = ">=3.8"
