@@ -8,11 +8,7 @@ from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel
 from typing import Type, Union
 from langfuse.langchain import CallbackHandler
-from dotenv import load_dotenv
 from loguru import logger
-
-load_dotenv()
-handler = CallbackHandler()
 
 
 def prompt_parsing(model: Type[BaseModel],
@@ -23,16 +19,60 @@ def prompt_parsing(model: Type[BaseModel],
                    langfuse_session_id: str = 'session_1',
                    max_concurrency: int = 1000) -> Union[BaseModel, list[BaseModel]]:
     """
-    让LLM按照query的要求， 返回一个pydantic model
-    :param model: pydantic model
-    :param failed_model:多次请求失败，返回一个instance of BaseModel
-    :param query:
-    :param llm:
-    :param langfuse_user_id:
-    :param langfuse_session_id:
-    :param max_concurrency:
-    :return:
+    Forces LLM output to conform to a specified Pydantic model structure.
+    
+    This function wraps LLM calls with structured output parsing, ensuring responses
+    follow the defined schema. It supports both single and batch processing with
+    automatic retry logic for failed requests.
+    
+    :param model: Pydantic model class defining the expected output structure
+    :param failed_model: Fallback instance returned after max retries (10 attempts)
+    :param query: Single query string or list of queries to process
+    :param llm: LangChain chat model instance for inference
+    :param langfuse_user_id: User identifier for Langfuse observability tracking
+    :param langfuse_session_id: Session identifier for Langfuse observability tracking  
+    :param max_concurrency: Maximum concurrent requests for batch processing
+    :return: Single BaseModel instance or list of BaseModel instances matching input queries
+
+    Example:
+    from langchainkit import prompt_parsing,LocalLLM
+    from pydantic import BaseModel
+
+    llm = LocalLLM.qwen3_14b_awq_think()
+
+    class Response(BaseModel):
+        answer: str
+        confidence: float
+
+    result = prompt_parsing(
+        model=Response,
+        failed_model=Response(answer="no_answer", confidence=0.0),
+        query="What is the capital of France?",
+        llm=llm
+    )
+    print(result.answer)  # "Paris"
+    print(result.confidence)  # 1.0
+
+    result = prompt_parsing(
+        model=Response,
+        failed_model=Response(answer="no_answer", confidence=0.0),
+        query=["What is the capital of France?",
+               "What is the capital of Germany?",
+               "What is the capital of Italy?"],
+        llm=llm
+    )
+    for each in result:
+        print(each.answer)
+        print(each.confidence)
+
+    # Paris
+    # 0.95
+    # Berlin
+    # 0.95
+    # Rome
+    # 1.0
     """
+    handler = CallbackHandler()
     invoke_configs = RunnableConfig(max_concurrency=max_concurrency,
                                     callbacks=[handler],
                                     metadata={

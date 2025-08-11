@@ -34,7 +34,7 @@ load_dotenv() # load .env file
 
 from langchainkit import LocalLLM
 
-llm = LocalLLM().qwen3_14b_awq_think
+llm = LocalLLM.qwen3_14b_awq_think()
 res= llm.invoke('hello')
 print(res.content) # Hello! How can I assist you today? 😊
 ```
