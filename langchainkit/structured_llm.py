@@ -31,7 +31,8 @@ def prompt_parsing(model: Type[BaseModel],
     :param llm: LangChain chat model instance for inference
     :param langfuse_user_id: User identifier for Langfuse observability tracking
     :param langfuse_session_id: Session identifier for Langfuse observability tracking  
-    :param max_concurrency: Maximum concurrent requests for batch processing
+    :param max_concurrency: Maximum concurrent requests for batch processing.If not provied,
+    it will use the default value of llm.max_concurrency
     :return: Single BaseModel instance or list of BaseModel instances matching input queries
 
     Example:
@@ -73,6 +74,8 @@ def prompt_parsing(model: Type[BaseModel],
     # 1.0
     """
     handler = CallbackHandler()
+    if hasattr(llm, 'max_concurrency'):
+        max_concurrency=llm.max_concurrency
     invoke_configs = RunnableConfig(max_concurrency=max_concurrency,
                                     callbacks=[handler],
                                     metadata={

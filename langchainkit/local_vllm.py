@@ -4,6 +4,29 @@ import os
 from langchain_deepseek import ChatDeepSeek
 from langchain_openai import ChatOpenAI
 from langchain_openai.chat_models.base import BaseChatModel
+from pydantic import PrivateAttr
+
+
+class CustomChatOpenAI(ChatOpenAI):
+    """add max_concurrency"""
+    _max_concurrency: int = PrivateAttr(default=4)
+
+    @property
+    def max_concurrency(self): return self._max_concurrency
+
+    @max_concurrency.setter
+    def max_concurrency(self, v): self._max_concurrency = v
+
+
+class CustomChatDeepSeek(ChatDeepSeek):
+    """add max_concurrency"""
+    _max_concurrency: int = PrivateAttr(default=4)
+
+    @property
+    def max_concurrency(self): return self._max_concurrency
+
+    @max_concurrency.setter
+    def max_concurrency(self, v): self._max_concurrency = v
 
 
 class LocalLLM:
@@ -12,41 +35,43 @@ class LocalLLM:
     _qwen3_32b_think = None
 
     @classmethod
-    def qwen3_14b_awq_think(cls)->BaseChatModel:
+    def qwen3_14b_awq_think(cls) -> BaseChatModel:
         if cls._qwen3_14b_awq_think is None:
-            cls._qwen3_14b_awq_think = ChatDeepSeek(
+            cls._qwen3_14b_awq_think = CustomChatDeepSeek(
                 model="Qwen3-14B-AWQ",
                 api_key=os.getenv("LOCAL_VLLM_API_KEY"),
                 api_base=os.getenv("LOCAL_VLLM_BASE_URL"),
                 streaming=True,
                 extra_body={"chat_template_kwargs": {"enable_thinking": True}}
             )
+            cls._qwen3_14b_awq_think.max_concurrency = 100
         return cls._qwen3_14b_awq_think
 
     @classmethod
-    def qwen3_14b_awq_no_think(cls)->BaseChatModel:
+    def qwen3_14b_awq_no_think(cls) -> BaseChatModel:
         if cls._qwen3_14b_awq_no_think is None:
-            cls._qwen3_14b_awq_no_think = ChatDeepSeek(
+            cls._qwen3_14b_awq_no_think = CustomChatDeepSeek(
                 model="Qwen3-14B-AWQ",
                 api_key=os.getenv("LOCAL_VLLM_API_KEY"),
                 api_base=os.getenv("LOCAL_VLLM_BASE_URL"),
                 streaming=True,
                 extra_body={"chat_template_kwargs": {"enable_thinking": False}}
             )
+            cls._qwen3_14b_awq_no_think.max_concurrency = 100
         return cls._qwen3_14b_awq_no_think
 
     @classmethod
-    def qwen3_32b_think(cls)->BaseChatModel:
+    def qwen3_32b_think(cls) -> BaseChatModel:
         if cls._qwen3_32b_think is None:
-            cls._qwen3_32b_think = ChatDeepSeek(
+            cls._qwen3_32b_think = CustomChatDeepSeek(
                 model="Qwen3-32B",
                 api_key=os.getenv("LOCAL_VLLM_API_KEY"),
                 api_base=os.getenv("LOCAL_VLLM_BASE_URL"),
                 streaming=True,
                 extra_body={"chat_template_kwargs": {"enable_thinking": True}}
             )
+            cls._qwen3_32b_think.max_concurrency = 200
         return cls._qwen3_32b_think
-
 
 
 class ApiLLM:
@@ -54,27 +79,29 @@ class ApiLLM:
     _qwen3_235b_no_think = None
 
     @classmethod
-    def qwen3_235b_think(cls)->BaseChatModel:
+    def qwen3_235b_think(cls) -> BaseChatModel:
         if cls._qwen3_235b_think is None:
-            cls._qwen3_235b_think = ChatOpenAI(
+            cls._qwen3_235b_think = CustomChatOpenAI(
                 model="qwen3-235b-a22b-thinking-2507",
                 api_key=os.getenv("DASHSCOPE_API_KEY"),
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
                 streaming=True,
                 extra_body={"enable_thinking": True}
             )
+            cls._qwen3_235b_think.max_concurrency = 10
         return cls._qwen3_235b_think
 
     @classmethod
-    def qwen3_235b_no_think(cls)->BaseChatModel:
+    def qwen3_235b_no_think(cls) -> BaseChatModel:
         if cls._qwen3_235b_no_think is None:
-            cls._qwen3_235b_no_think = ChatOpenAI(
+            cls._qwen3_235b_no_think = CustomChatOpenAI(
                 model="qwen3-235b-a22b-instruct-2507",
                 api_key=os.getenv("DASHSCOPE_API_KEY"),
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
                 streaming=True,
                 extra_body={"enable_thinking": False}
             )
+            cls._qwen3_235b_no_think.max_concurrency = 10
         return cls._qwen3_235b_no_think
 
 
@@ -88,94 +115,107 @@ class GeneralLLM:
     _grok_4 = None
 
     @classmethod
-    def deepseek_reasoner(cls)->BaseChatModel:
+    def deepseek_reasoner(cls) -> BaseChatModel:
         if cls._deepseek_reasoner is None:
-            cls._deepseek_reasoner = ChatDeepSeek(
+            cls._deepseek_reasoner = CustomChatOpenAI(
                 model="deepseek-reasoner",
                 api_key=os.getenv("DEEPSEEK_API_KEY"),
                 base_url="https://api.deepseek.com",
                 streaming=True,
                 max_retries=5
             )
+            cls._deepseek_reasoner.max_concurrency = 300
         return cls._deepseek_reasoner
 
     @classmethod
-    def deepseek_chat(cls)->BaseChatModel:
+    def deepseek_chat(cls) -> BaseChatModel:
         if cls._deepseek_chat is None:
-            cls._deepseek_chat = ChatDeepSeek(
+            cls._deepseek_chat = CustomChatDeepSeek(
                 model="deepseek-chat",
                 api_key=os.getenv("DEEPSEEK_API_KEY"),
                 base_url="https://api.deepseek.com",
                 streaming=True,
                 max_retries=5
             )
+            cls._deepseek_chat.max_concurrency = 300
         return cls._deepseek_chat
 
     @classmethod
-    def kimi_k2(cls)->BaseChatModel:
+    def kimi_k2(cls) -> BaseChatModel:
         if cls._kimi_k2 is None:
-            cls._kimi_k2 = ChatOpenAI(
+            cls._kimi_k2 = CustomChatOpenAI(
                 model="kimi-k2-0711-preview",
                 api_key=os.getenv("MOONSHOT_API_KEY"),
                 base_url="https://api.moonshot.cn/v1",
                 streaming=True,
                 max_retries=5
             )
+            cls._kimi_k2.max_concurrency = 100
         return cls._kimi_k2
 
     @classmethod
-    def gpt_4o(cls)->BaseChatModel:
+    def gpt_4o(cls) -> BaseChatModel:
         if cls._gpt_4o is None:
-            cls._gpt_4o = ChatOpenAI(
+            cls._gpt_4o = CustomChatOpenAI(
                 model="openai/gpt-4o",
                 api_key=os.getenv("OPENROUTER_API_KEY"),
                 base_url="https://openrouter.ai/api/v1",
                 streaming=True,
                 max_retries=5
             )
+            cls._gpt_4o.max_concurrency = 100
         return cls._gpt_4o
 
     @classmethod
-    def gpt_5_mini(cls)->BaseChatModel:
+    def gpt_5_mini(cls) -> BaseChatModel:
         if cls._gpt_5_mini is None:
-            cls._gpt_5_mini = ChatOpenAI(
+            cls._gpt_5_mini = CustomChatOpenAI(
                 model="openai/gpt-5-mini",
                 api_key=os.getenv("OPENROUTER_API_KEY"),
                 base_url="https://openrouter.ai/api/v1",
                 streaming=True,
                 max_retries=5
             )
+            cls._gpt_5_mini.max_concurrency = 100
         return cls._gpt_5_mini
 
-    #google / gemini - 2.5 - pro
+    # google / gemini - 2.5 - pro
     @classmethod
-    def gemini_2_5_pro(cls)->BaseChatModel:
+    def gemini_2_5_pro(cls) -> BaseChatModel:
         if cls._gemini_2_5_pro is None:
-            cls._gemini_2_5_pro = ChatOpenAI(
+            cls._gemini_2_5_pro = CustomChatOpenAI(
                 model="google/gemini-2.5-pro",
                 api_key=os.getenv("OPENROUTER_API_KEY"),
                 base_url="https://openrouter.ai/api/v1",
                 streaming=True,
                 max_retries=5
             )
+            cls._gemini_2_5_pro.max_concurrency = 100
         return cls._gemini_2_5_pro
 
     @classmethod
-    def grok_4(cls)->BaseChatModel:
+    def grok_4(cls) -> BaseChatModel:
         if cls._grok_4 is None:
-            cls._grok_4 = ChatOpenAI(
+            cls._grok_4 = CustomChatOpenAI(
                 model="x-ai/grok-4",
                 api_key=os.getenv("OPENROUTER_API_KEY"),
                 base_url="https://openrouter.ai/api/v1",
                 streaming=True,
                 max_retries=5
             )
+            cls._grok_4.max_concurrency = 100
         return cls._grok_4
 
 
 if __name__ == '__main__':
     from dotenv import load_dotenv
+    from langchain_core.runnables.config import RunnableConfig
     load_dotenv()
-    # llm=GeneralLLM.gpt_4o()
-    llm=ApiLLM.qwen3_235b_think()
-    print(llm.invoke('hello'))
+    llm = GeneralLLM.gpt_4o()
+    print(llm.max_concurrency)
+    llm = ApiLLM.qwen3_235b_think()
+    print(llm.max_concurrency)
+    # print(llm.invoke('hello'))
+    llm=GeneralLLM.gpt_5_mini()
+    res=llm.batch(['hello' for _ in range(100)],config=RunnableConfig(max_concurrency=1000))
+    print(res)
