@@ -6,34 +6,50 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel
-from typing import Type, Union
+from typing import Type, Union,TypeVar
 from langfuse.langchain import CallbackHandler
 from loguru import logger
 
+M = TypeVar("M", bound=BaseModel)
 
-def prompt_parsing(model: Type[BaseModel],
-                   failed_model: BaseModel,
+def prompt_parsing(model: Type[M],
+                   failed_model: M,
                    query: Union[str, list[str]],
                    llm: BaseChatModel,
                    langfuse_user_id: str = 'user_1',
                    langfuse_session_id: str = 'session_1',
-                   max_concurrency: int = 1000) -> Union[BaseModel, list[BaseModel]]:
+                   max_concurrency: int = 1000) -> Union[M, list[M]]:
     """
-    Forces LLM output to conform to a specified Pydantic model structure.
-    
-    This function wraps LLM calls with structured output parsing, ensuring responses
-    follow the defined schema. It supports both single and batch processing with
-    automatic retry logic for failed requests.
-    
-    :param model: Pydantic model class defining the expected output structure
-    :param failed_model: Fallback instance returned after max retries (10 attempts)
-    :param query: Single query string or list of queries to process
-    :param llm: LangChain chat model instance for inference
-    :param langfuse_user_id: User identifier for Langfuse observability tracking
-    :param langfuse_session_id: Session identifier for Langfuse observability tracking  
-    :param max_concurrency: Maximum concurrent requests for batch processing.If not provied,
-    it will use the default value of llm.max_concurrency
-    :return: Single BaseModel instance or list of BaseModel instances matching input queries
+    Force LLM outputs to conform to a specified Pydantic model schema.
+
+    This function wraps LLM calls with structured output parsing, ensuring that
+    responses strictly follow the given Pydantic model definition. It supports
+    both single-query and batch-query processing, and includes automatic retry
+    logic (up to 10 attempts) for failed requests.
+
+    Parameters
+    ----------
+    model : Type[BaseModel]
+        Pydantic model class defining the expected output schema.
+    failed_model : BaseModel
+        Fallback instance returned if all retries are exhausted.
+    query : str or list of str
+        A single query string or a list of queries to process.
+    llm : BaseChatModel
+        LangChain chat model instance used for inference.
+    langfuse_user_id : str, optional
+        User identifier for Langfuse observability tracking. Default is "user_1".
+    langfuse_session_id : str, optional
+        Session identifier for Langfuse observability tracking. Default is "session_1".
+    max_concurrency : int, optional
+        Maximum number of concurrent requests for batch processing. If not
+        provided, defaults to ``llm.max_concurrency``.
+
+    Returns
+    -------
+    BaseModel or list of BaseModel
+        A single model instance or a list of model instances, depending on the
+        input query.
 
     Example:
     from langchainkit import prompt_parsing,LocalLLM
