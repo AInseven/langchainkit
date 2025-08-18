@@ -6,11 +6,36 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel
-from typing import Type, Union,TypeVar
+from typing import Type, Union, TypeVar, overload
 from langfuse.langchain import CallbackHandler
 from loguru import logger
 
 M = TypeVar("M", bound=BaseModel)
+
+
+@overload
+def prompt_parsing(
+        model: Type[M],
+        failed_model: M,
+        query: str,
+        llm,
+        langfuse_user_id: str = ...,
+        langfuse_session_id: str = ...,
+        max_concurrency: int = ...
+) -> M: ...
+
+
+@overload
+def prompt_parsing(
+        model: Type[M],
+        failed_model: M,
+        query: List[str],
+        llm,
+        langfuse_user_id: str = ...,
+        langfuse_session_id: str = ...,
+        max_concurrency: int = ...
+) -> List[M]: ...
+
 
 def prompt_parsing(model: Type[M],
                    failed_model: M,
@@ -91,7 +116,7 @@ def prompt_parsing(model: Type[M],
     """
     handler = CallbackHandler()
     if hasattr(llm, 'max_concurrency'):
-        max_concurrency=llm.max_concurrency
+        max_concurrency = llm.max_concurrency
     invoke_configs = RunnableConfig(max_concurrency=max_concurrency,
                                     callbacks=[handler],
                                     metadata={
