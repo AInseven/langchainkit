@@ -117,7 +117,7 @@ class GeneralLLM:
     @classmethod
     def deepseek_reasoner(cls) -> BaseChatModel:
         if cls._deepseek_reasoner is None:
-            cls._deepseek_reasoner = CustomChatOpenAI(
+            cls._deepseek_reasoner = CustomChatDeepSeek(
                 model="deepseek-reasoner",
                 api_key=os.getenv("DEEPSEEK_API_KEY"),
                 base_url="https://api.deepseek.com",
@@ -205,17 +205,3 @@ class GeneralLLM:
             )
             cls._grok_4.max_concurrency = 100
         return cls._grok_4
-
-
-if __name__ == '__main__':
-    from dotenv import load_dotenv
-    from langchain_core.runnables.config import RunnableConfig
-    load_dotenv()
-    llm = GeneralLLM.gpt_4o()
-    print(llm.max_concurrency)
-    llm = ApiLLM.qwen3_235b_think()
-    print(llm.max_concurrency)
-    # print(llm.invoke('hello'))
-    llm=GeneralLLM.gpt_5_mini()
-    res=llm.batch(['hello' for _ in range(100)],config=RunnableConfig(max_concurrency=1000))
-    print(res)

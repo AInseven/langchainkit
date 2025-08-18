@@ -6,7 +6,7 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel
-from typing import Type, Union, TypeVar, overload
+from typing import Type, Union, TypeVar, overload,List
 from langfuse.langchain import CallbackHandler
 from loguru import logger
 
