@@ -23,7 +23,8 @@ def batch_with_retry(
     """
     results: List[Union[Any, Exception]] = [None] * len(prompts)
     remaining_idx = list(range(len(prompts)))
-
+    if input_config is None:
+        input_config = RunnableConfig(max_concurrency=llm.max_concurrency)
     for attempt in range(max_retries):
         if not remaining_idx:
             break

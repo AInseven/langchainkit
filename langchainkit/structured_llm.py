@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing import Type, Union, TypeVar, overload,List
 from langfuse.langchain import CallbackHandler
 from loguru import logger
+from tqdm import tqdm
 
 M = TypeVar("M", bound=BaseModel)
 
@@ -19,6 +20,7 @@ def prompt_parsing(
         failed_model: M,
         query: str,
         llm,
+        use_langfuse: bool = ...,
         langfuse_user_id: str = ...,
         langfuse_session_id: str = ...,
         max_concurrency: int = ...
@@ -31,6 +33,7 @@ def prompt_parsing(
         failed_model: M,
         query: List[str],
         llm,
+        use_langfuse: bool = ...,
         langfuse_user_id: str = ...,
         langfuse_session_id: str = ...,
         max_concurrency: int = ...
@@ -41,6 +44,7 @@ def prompt_parsing(model: Type[M],
                    failed_model: M,
                    query: Union[str, list[str]],
                    llm: BaseChatModel,
+                   use_langfuse: bool = True,
                    langfuse_user_id: str = 'user_1',
                    langfuse_session_id: str = 'session_1',
                    max_concurrency: int = 1000) -> Union[M, list[M]]:
@@ -62,6 +66,8 @@ def prompt_parsing(model: Type[M],
         A single query string or a list of queries to process.
     llm : BaseChatModel
         LangChain chat model instance used for inference.
+    use_langfuse: bool
+        Whether to use Langfuse.
     langfuse_user_id : str, optional
         User identifier for Langfuse observability tracking. Default is "user_1".
     langfuse_session_id : str, optional
@@ -114,11 +120,13 @@ def prompt_parsing(model: Type[M],
     # Rome
     # 1.0
     """
+    model_name = getattr(llm, "model", None) or getattr(llm, "model_name", None)
+
     handler = CallbackHandler()
     if hasattr(llm, 'max_concurrency'):
         max_concurrency = llm.max_concurrency
     invoke_configs = RunnableConfig(max_concurrency=max_concurrency,
-                                    callbacks=[handler],
+                                    callbacks=[handler] if use_langfuse else [],
                                     metadata={
                                         "langfuse_user_id": langfuse_user_id,
                                         "langfuse_session_id": langfuse_session_id,
@@ -155,19 +163,23 @@ def prompt_parsing(model: Type[M],
             break
 
         retry_inputs = [inputs[i] for i in to_retry]
+        new_to_retry_set = set()
 
-        batch_out = chain.batch(retry_inputs, config=invoke_configs, return_exceptions=True)
+        with tqdm(total=len(retry_inputs), desc=f"{model_name} Attempt {attempt}", leave=False) as pbar:
+            for j, out in chain.batch_as_completed(
+                    retry_inputs,
+                    config=invoke_configs,
+                    return_exceptions=True,
+            ):
+                i = to_retry[j]
+                if isinstance(out, Exception):
+                    logger.warning(f"[Attempt {attempt}] Failed on input {i}: {inputs[i]['query']}")
+                    new_to_retry_set.add(i)
+                else:
+                    results[i] = out
+                pbar.update(1)
 
-        new_to_retry = []
-        for i, out in zip(to_retry, batch_out):
-            if isinstance(out, Exception):
-                logger.warning(f"[Attempt {attempt}] Failed on input {i}: {inputs[i]['query']}")
-                # 失败的加入new_to_retry，下次一起batch retry
-                new_to_retry.append(i)
-            else:
-                results[i] = out
-
-        to_retry = new_to_retry
+        to_retry = sorted(new_to_retry_set)
         if to_retry:
             time.sleep(1.5)  # Optional: small delay between retries
 
