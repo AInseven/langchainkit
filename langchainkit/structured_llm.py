@@ -10,6 +10,7 @@ from typing import Type, Union, TypeVar, overload,List
 from langfuse.langchain import CallbackHandler
 from loguru import logger
 from tqdm import tqdm
+from datetime import datetime
 
 M = TypeVar("M", bound=BaseModel)
 
@@ -177,6 +178,9 @@ def prompt_parsing(model: Type[M],
                     new_to_retry_set.add(i)
                 else:
                     results[i] = out
+                # add current time to progress bar
+                now = datetime.now().strftime("%H:%M:%S")
+                pbar.set_postfix_str(now)
                 pbar.update(1)
 
         to_retry = sorted(new_to_retry_set)
