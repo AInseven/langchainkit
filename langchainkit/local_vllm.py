@@ -42,7 +42,8 @@ class LocalLLM:
                 api_key=os.getenv("LOCAL_VLLM_API_KEY"),
                 api_base=os.getenv("LOCAL_VLLM_BASE_URL"),
                 streaming=True,
-                extra_body={"chat_template_kwargs": {"enable_thinking": True}}
+                extra_body={"chat_template_kwargs": {"enable_thinking": True}},
+                timeout=300
             )
             cls._qwen3_14b_awq_think.max_concurrency = 100
         return cls._qwen3_14b_awq_think
@@ -55,7 +56,8 @@ class LocalLLM:
                 api_key=os.getenv("LOCAL_VLLM_API_KEY"),
                 api_base=os.getenv("LOCAL_VLLM_BASE_URL"),
                 streaming=True,
-                extra_body={"chat_template_kwargs": {"enable_thinking": False}}
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}},
+                timeout=300
             )
             cls._qwen3_14b_awq_no_think.max_concurrency = 100
         return cls._qwen3_14b_awq_no_think
@@ -68,7 +70,8 @@ class LocalLLM:
                 api_key=os.getenv("LOCAL_VLLM_API_KEY"),
                 api_base=os.getenv("LOCAL_VLLM_BASE_URL"),
                 streaming=True,
-                extra_body={"chat_template_kwargs": {"enable_thinking": True}}
+                extra_body={"chat_template_kwargs": {"enable_thinking": True}},
+                timeout=300
             )
             cls._qwen3_32b_think.max_concurrency = 200
         return cls._qwen3_32b_think
@@ -86,6 +89,7 @@ class ApiLLM:
                 api_key=os.getenv("DASHSCOPE_API_KEY"),
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
                 streaming=True,
+                timeout=300,
                 extra_body={"enable_thinking": True}
             )
             cls._qwen3_235b_think.max_concurrency = 10
@@ -99,6 +103,7 @@ class ApiLLM:
                 api_key=os.getenv("DASHSCOPE_API_KEY"),
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
                 streaming=True,
+                timeout=300,
                 extra_body={"enable_thinking": False}
             )
             cls._qwen3_235b_no_think.max_concurrency = 10
@@ -122,7 +127,8 @@ class GeneralLLM:
                 api_key=os.getenv("DEEPSEEK_API_KEY"),
                 base_url="https://api.deepseek.com",
                 streaming=True,
-                max_retries=5
+                max_retries=5,
+                timeout=300
             )
             cls._deepseek_reasoner.max_concurrency = 300
         return cls._deepseek_reasoner
@@ -135,7 +141,8 @@ class GeneralLLM:
                 api_key=os.getenv("DEEPSEEK_API_KEY"),
                 base_url="https://api.deepseek.com",
                 streaming=True,
-                max_retries=5
+                max_retries=5,
+                timeout=300
             )
             cls._deepseek_chat.max_concurrency = 300
         return cls._deepseek_chat
@@ -148,7 +155,8 @@ class GeneralLLM:
                 api_key=os.getenv("MOONSHOT_API_KEY"),
                 base_url="https://api.moonshot.cn/v1",
                 streaming=True,
-                max_retries=5
+                max_retries=5,
+                timeout=300
             )
             cls._kimi_k2.max_concurrency = 100
         return cls._kimi_k2
@@ -161,7 +169,8 @@ class GeneralLLM:
                 api_key=os.getenv("OPENROUTER_API_KEY"),
                 base_url="https://openrouter.ai/api/v1",
                 streaming=True,
-                max_retries=5
+                max_retries=5,
+                timeout=300
             )
             cls._gpt_4o.max_concurrency = 100
         return cls._gpt_4o
@@ -174,7 +183,8 @@ class GeneralLLM:
                 api_key=os.getenv("OPENROUTER_API_KEY"),
                 base_url="https://openrouter.ai/api/v1",
                 streaming=True,
-                max_retries=5
+                max_retries=5,
+                timeout=300
             )
             cls._gpt_5_mini.max_concurrency = 100
         return cls._gpt_5_mini
@@ -188,7 +198,8 @@ class GeneralLLM:
                 api_key=os.getenv("OPENROUTER_API_KEY"),
                 base_url="https://openrouter.ai/api/v1",
                 streaming=True,
-                max_retries=5
+                max_retries=5,
+                timeout=300
             )
             cls._gemini_2_5_pro.max_concurrency = 100
         return cls._gemini_2_5_pro
@@ -201,7 +212,8 @@ class GeneralLLM:
                 api_key=os.getenv("OPENROUTER_API_KEY"),
                 base_url="https://openrouter.ai/api/v1",
                 streaming=True,
-                max_retries=5
+                max_retries=5,
+                timeout=300
             )
             cls._grok_4.max_concurrency = 100
         return cls._grok_4
