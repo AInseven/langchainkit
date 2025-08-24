@@ -33,6 +33,7 @@ class LocalLLM:
     _qwen3_14b_awq_think = None
     _qwen3_14b_awq_no_think = None
     _qwen3_32b_think = None
+    _qwen3_30b_a3b_think = None
 
     @classmethod
     def qwen3_14b_awq_think(cls) -> BaseChatModel:
@@ -75,6 +76,19 @@ class LocalLLM:
             )
             cls._qwen3_32b_think.max_concurrency = 200
         return cls._qwen3_32b_think
+
+    @classmethod
+    def qwen3_30b_a3b_think(cls) -> BaseChatModel:
+        if cls._qwen3_30b_a3b_think is None:
+            cls._qwen3_30b_a3b_think = CustomChatDeepSeek(
+                model="Qwen3-30B-A3B-Thinking-2507",
+                api_key=os.getenv("LOCAL_VLLM_API_KEY"),
+                api_base=os.getenv("LOCAL_VLLM_BASE_URL"),
+                streaming=True,
+                timeout=200
+            )
+            cls._qwen3_30b_a3b_think.max_concurrency = 500
+        return cls._qwen3_30b_a3b_think
 
 
 class ApiLLM:
