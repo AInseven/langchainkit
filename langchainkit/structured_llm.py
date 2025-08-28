@@ -6,7 +6,7 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel
-from typing import Type, Union, TypeVar, overload,List
+from typing import Type, Union, TypeVar, overload, List
 from langfuse.langchain import CallbackHandler
 from loguru import logger
 from tqdm import tqdm
@@ -188,3 +188,21 @@ def prompt_parsing(model: Type[M],
             time.sleep(1.5)  # Optional: small delay between retries
 
     return results
+
+
+def print_instructions(model: Type[BaseModel], query: str):
+    """
+    Print instructions for promp engineering
+
+    Parameters
+    ----------
+    model : Type[BaseModel]
+        Pydantic model class defining the expected output schema.
+    query : str
+        A single query string.
+    """
+    parser = PydanticOutputParser(pydantic_object=model)
+    system_prompt = """Answer the user query. Wrap the output  in ```json and ``` tags\n{format_instructions}\n\n"""
+    prefix = system_prompt.format(format_instructions=parser.get_format_instructions())
+
+    print(prefix + query)
