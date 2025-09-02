@@ -140,7 +140,8 @@ def prompt_parsing(model: Type[M],
         [
             (
                 "system",
-                "Answer the user query. Wrap the output  in ```json and ``` tags\n{format_instructions}",
+                # "Answer the user query. Wrap the output  in ```json and ``` tags\n{format_instructions}",
+                "回答用户的问题. 把输出结果包裹在 ```json 和 ``` 标签里.\n{format_instructions}",
             ),
             ("human", "{query}"),
         ]

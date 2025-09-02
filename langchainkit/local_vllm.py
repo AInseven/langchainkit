@@ -132,6 +132,8 @@ class GeneralLLM:
     _gemini_2_5_pro = None
     _kimi_k2 = None
     _grok_4 = None
+    _gemini_2_5_flash = None
+    _qwen3_235b_think = None
 
     @classmethod
     def deepseek_reasoner(cls) -> BaseChatModel:
@@ -231,3 +233,31 @@ class GeneralLLM:
             )
             cls._grok_4.max_concurrency = 100
         return cls._grok_4
+
+    @classmethod
+    def gemini_2_5_flash(cls) -> BaseChatModel:
+        if cls._gemini_2_5_flash is None:
+            cls._gemini_2_5_flash = CustomChatOpenAI(
+                model="google/gemini-2.5-flash",
+                api_key=os.getenv("OPENROUTER_API_KEY"),
+                base_url="https://openrouter.ai/api/v1",
+                streaming=True,
+                max_retries=5,
+                timeout=300
+            )
+            cls._gemini_2_5_flash.max_concurrency = 100
+        return cls._gemini_2_5_flash
+
+    @classmethod
+    def qwen3_235b_think(cls) -> BaseChatModel:
+        if cls._qwen3_235b_think is None:
+            cls._qwen3_235b_think = CustomChatOpenAI(
+                model="qwen/qwen3-235b-a22b-thinking-2507",
+                api_key=os.getenv("OPENROUTER_API_KEY"),
+                base_url="https://openrouter.ai/api/v1",
+                streaming=True,
+                max_retries=5,
+                timeout=300
+            )
+            cls._qwen3_235b_think.max_concurrency = 100
+        return cls._qwen3_235b_think
