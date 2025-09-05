@@ -48,7 +48,7 @@ def prompt_parsing(model: Type[M],
                    use_langfuse: bool = True,
                    langfuse_user_id: str = 'user_1',
                    langfuse_session_id: str = 'session_1',
-                   max_concurrency: int = 1000) -> Union[M, list[M]]:
+                   max_concurrency: int = None) -> Union[M, list[M]]:
     """
     Force LLM outputs to conform to a specified Pydantic model schema.
 
@@ -124,8 +124,10 @@ def prompt_parsing(model: Type[M],
     model_name = getattr(llm, "model", None) or getattr(llm, "model_name", None)
 
     handler = CallbackHandler()
-    if hasattr(llm, 'max_concurrency'):
+    if hasattr(llm, 'max_concurrency') and max_concurrency is None:
         max_concurrency = llm.max_concurrency
+    elif max_concurrency is None:
+        max_concurrency = 10
     invoke_configs = RunnableConfig(max_concurrency=max_concurrency,
                                     callbacks=[handler] if use_langfuse else [],
                                     metadata={

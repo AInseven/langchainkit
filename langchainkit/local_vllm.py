@@ -60,7 +60,7 @@ class LocalLLM:
                 extra_body={"chat_template_kwargs": {"enable_thinking": False}},
                 timeout=300
             )
-            cls._qwen3_14b_awq_no_think.max_concurrency = 100
+            cls._qwen3_14b_awq_no_think.max_concurrency = 300
         return cls._qwen3_14b_awq_no_think
 
     @classmethod
