@@ -23,7 +23,7 @@ def prompt_parsing(
         llm,
         use_langfuse: bool = ...,
         langfuse_user_id: str = ...,
-        langfuse_session_id: str = ...,
+        langfuse_session_id: Union[str, list[str]] = ...,
         max_concurrency: int = ...
 ) -> M: ...
 
@@ -36,7 +36,7 @@ def prompt_parsing(
         llm,
         use_langfuse: bool = ...,
         langfuse_user_id: str = ...,
-        langfuse_session_id: str = ...,
+        langfuse_session_id: Union[str, list[str]] = ...,
         max_concurrency: int = ...
 ) -> List[M]: ...
 
@@ -47,7 +47,7 @@ def prompt_parsing(model: Type[M],
                    llm: BaseChatModel,
                    use_langfuse: bool = True,
                    langfuse_user_id: str = 'user_1',
-                   langfuse_session_id: str = 'session_1',
+                   langfuse_session_id: Union[str, list[str]] = 'session_1',
                    max_concurrency: int = None) -> Union[M, list[M]]:
     """
     Force LLM outputs to conform to a specified Pydantic model schema.
@@ -71,8 +71,9 @@ def prompt_parsing(model: Type[M],
         Whether to use Langfuse.
     langfuse_user_id : str, optional
         User identifier for Langfuse observability tracking. Default is "user_1".
-    langfuse_session_id : str, optional
+    langfuse_session_id : str or list of str, optional
         Session identifier for Langfuse observability tracking. Default is "session_1".
+        If it is a str, then all query will use same session_id
     max_concurrency : int, optional
         Maximum number of concurrent requests for batch processing. If not
         provided, defaults to ``llm.max_concurrency``.
@@ -128,7 +129,20 @@ def prompt_parsing(model: Type[M],
         max_concurrency = llm.max_concurrency
     elif max_concurrency is None:
         max_concurrency = 10
-    invoke_configs = RunnableConfig(max_concurrency=max_concurrency,
+
+    if isinstance(langfuse_session_id,list):
+        assert len(langfuse_session_id) == len(query), "langfuse_session_id must be list with same length as query"
+        invoke_configs=[]
+        for session_id in langfuse_session_id:
+            invoke_configs.append(RunnableConfig(max_concurrency=max_concurrency,
+                                    callbacks=[handler] if use_langfuse else [],
+                                    metadata={
+                                        "langfuse_user_id": langfuse_user_id,
+                                        "langfuse_session_id": session_id,
+                                        "langfuse_tags": ["langchain"]
+                                    }))
+    else:
+        invoke_configs = RunnableConfig(max_concurrency=max_concurrency,
                                     callbacks=[handler] if use_langfuse else [],
                                     metadata={
                                         "langfuse_user_id": langfuse_user_id,
