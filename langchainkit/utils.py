@@ -3,6 +3,7 @@ from typing import Any, List, Union
 from langchain_openai.chat_models.base import BaseChatModel
 from langchain_core.runnables import RunnableConfig
 from loguru import logger
+from tqdm import tqdm
 
 def batch_with_retry(
     llm:BaseChatModel,
@@ -31,7 +32,18 @@ def batch_with_retry(
 
         # Run batch on the remaining prompts
         sub_prompts = [prompts[i] for i in remaining_idx]
-        sub_results = llm.batch(sub_prompts, config=input_config, return_exceptions=True)
+        sub_results: List[Union[Any, Exception]] = [None] * len(sub_prompts)
+        for i, res in tqdm(
+                llm.batch_as_completed(
+                    sub_prompts,
+                    config=input_config,
+                    return_exceptions=True
+                ),
+                total=len(sub_prompts),
+                desc=f"Batch attempt {attempt + 1}",
+                leave=False
+        ):
+            sub_results[i] = res
 
         new_remaining = []
         for idx, res in zip(remaining_idx, sub_results):

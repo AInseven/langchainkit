@@ -200,7 +200,7 @@ def prompt_parsing(model: Type[M],
             ):
                 i = to_retry[j]
                 if isinstance(out, Exception):
-                    logger.warning(f"[Attempt {attempt}] Failed on input {i}: {inputs[i]['query']}")
+                    logger.warning(f"[Attempt {attempt}] Failed on input {i},add to retry")
                     new_to_retry_set.add(i)
                 else:
                     results[i] = out
