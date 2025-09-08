@@ -181,12 +181,13 @@ def prompt_parsing(model: Type[M],
             break
 
         retry_inputs = [inputs[i] for i in to_retry]
+        retry_configs = [invoke_configs[i] for i in to_retry]
         new_to_retry_set = set()
 
         with tqdm(total=len(retry_inputs), desc=f"{model_name} Attempt {attempt}", leave=False) as pbar:
             for j, out in chain.batch_as_completed(
                     retry_inputs,
-                    config=invoke_configs,
+                    config=retry_configs,
                     return_exceptions=True,
             ):
                 i = to_retry[j]
