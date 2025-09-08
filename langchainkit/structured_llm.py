@@ -141,6 +141,14 @@ def prompt_parsing(model: Type[M],
                                         "langfuse_session_id": session_id,
                                         "langfuse_tags": ["langchain"]
                                     }))
+    elif isinstance(langfuse_session_id,str) and isinstance(query,list):
+        invoke_configs = [RunnableConfig(max_concurrency=max_concurrency,
+                                    callbacks=[handler] if use_langfuse else [],
+                                    metadata={
+                                        "langfuse_user_id": langfuse_user_id,
+                                        "langfuse_session_id": langfuse_session_id,
+                                        "langfuse_tags": ["langchain"]
+                                    }) for _ in query]
     else:
         invoke_configs = RunnableConfig(max_concurrency=max_concurrency,
                                     callbacks=[handler] if use_langfuse else [],
