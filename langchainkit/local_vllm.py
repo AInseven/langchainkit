@@ -134,6 +134,7 @@ class GeneralLLM:
     _grok_4 = None
     _gemini_2_5_flash = None
     _qwen3_235b_think = None
+    _openrouter = None
 
     @classmethod
     def deepseek_reasoner(cls) -> BaseChatModel:
@@ -261,3 +262,17 @@ class GeneralLLM:
             )
             cls._qwen3_235b_think.max_concurrency = 100
         return cls._qwen3_235b_think
+
+    @classmethod
+    def openrouter(cls, model_name: str):
+        if cls._openrouter is None:
+            cls._openrouter = CustomChatOpenAI(
+            model=model_name,
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1",
+            streaming=True,
+            max_retries=5,
+            timeout=300
+            )
+            cls._openrouter.max_concurrency = 100
+        return cls._openrouter
