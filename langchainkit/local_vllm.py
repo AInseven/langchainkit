@@ -135,6 +135,7 @@ class GeneralLLM:
     _gemini_2_5_flash = None
     _qwen3_235b_think = None
     _openrouter = None
+    _doubao_1_6 = None
 
     @classmethod
     def deepseek_reasoner(cls) -> BaseChatModel:
@@ -276,3 +277,17 @@ class GeneralLLM:
             )
             cls._openrouter.max_concurrency = 100
         return cls._openrouter
+
+    @classmethod
+    def doubao_1_6(cls, model_name: str="doubao-seed-1-6-250615"):
+        if cls._doubao_1_6 is None:
+            cls._doubao_1_6 = CustomChatOpenAI(
+            model=model_name,
+            api_key=os.getenv("ARK_API_KEY"),
+            base_url="https://ark.cn-beijing.volces.com/api/v3",
+            streaming=True,
+            max_retries=5,
+            timeout=300
+            )
+            cls._doubao_1_6.max_concurrency = 100
+        return cls._doubao_1_6
