@@ -1,6 +1,5 @@
 """Structured output parsing functionality for LangKit."""
 
-import time
 from langchain_openai.chat_models.base import BaseChatModel
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,8 +8,7 @@ from pydantic import BaseModel
 from typing import Type, Union, TypeVar, overload, List
 from langfuse.langchain import CallbackHandler
 from loguru import logger
-from tqdm import tqdm
-from datetime import datetime
+from utils import batch_with_retry
 
 M = TypeVar("M", bound=BaseModel)
 
@@ -177,42 +175,17 @@ def prompt_parsing(model: Type[M],
     if isinstance(query, str):
         return chain.invoke({"query": query}, config=invoke_configs)
 
-    # 如果query是多个请求list[str]，则批量调用
+    # 如果query是多个请求list[str]，则使用batch_with_retry批量调用
     inputs = [{"query": q} for q in query]
-    results = [failed_model] * len(inputs)
-    max_retries = 10
 
-    # chain.batch对出错的request会return_exceptions，对报错的request进行重试
-    to_retry = list(range(len(inputs)))
-
-    for attempt in range(1, max_retries + 1):
-        if not to_retry:
-            break
-
-        retry_inputs = [inputs[i] for i in to_retry]
-        retry_configs = [invoke_configs[i] for i in to_retry]
-        new_to_retry_set = set()
-
-        with tqdm(total=len(retry_inputs), desc=f"{model_name} Attempt {attempt}", leave=False) as pbar:
-            for j, out in chain.batch_as_completed(
-                    retry_inputs,
-                    config=retry_configs,
-                    return_exceptions=True,
-            ):
-                i = to_retry[j]
-                if isinstance(out, Exception):
-                    logger.warning(f"[Attempt {attempt}] Failed on input {i}, error: {out}")
-                    new_to_retry_set.add(i)
-                else:
-                    results[i] = out
-                # add current time to progress bar
-                now = datetime.now().strftime("%H:%M:%S")
-                pbar.set_postfix_str(now)
-                pbar.update(1)
-
-        to_retry = sorted(new_to_retry_set)
-        if to_retry:
-            time.sleep(1.5)  # Optional: small delay between retries
+    results = batch_with_retry(
+        llm=chain,
+        prompts=inputs,
+        input_config=invoke_configs,
+        max_retries=10,
+        delay=2,
+        failed_value=failed_model
+    )
 
     return results
 
