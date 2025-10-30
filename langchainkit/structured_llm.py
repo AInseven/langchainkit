@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Type, Union, TypeVar, overload, List
 from langfuse.langchain import CallbackHandler
 from loguru import logger
-from utils import batch_with_retry
+from .utils import batch_with_retry
 
 M = TypeVar("M", bound=BaseModel)
 
