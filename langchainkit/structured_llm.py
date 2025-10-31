@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Type, Union, TypeVar, overload, List
 from langfuse.langchain import CallbackHandler
 from loguru import logger
-from .utils import batch_with_retry
+from langchainkit.utils import batch_with_retry
 
 M = TypeVar("M", bound=BaseModel)
 
@@ -184,7 +184,8 @@ def prompt_parsing(model: Type[M],
         input_config=invoke_configs,
         max_retries=10,
         delay=2,
-        failed_value=failed_model
+        failed_value=failed_model,
+        llm_name=model_name
     )
 
     return results
