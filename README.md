@@ -1,6 +1,6 @@
 # LangChainKit
 
-LangChainKit makes it easier to work with Qwen3 models via [vLLM](https://github.com/vllm-project/vllm), and simplifies the process of prompting LLMs to return structured outputs using [LangChain](https://github.com/langchain-ai/langchain) and [LangFuse](https://github.com/langfuse/langfuse).
+LangChainKit simplifies the process of prompting LLMs to return structured outputs using [LangChain](https://github.com/langchain-ai/langchain) and [LangFuse](https://github.com/langfuse/langfuse).
 
 --- 
 
@@ -60,7 +60,8 @@ result = prompt_parsing(
     model=Response,
     failed_model=Response(answer="no_answer", confidence=0.0),
     query="What is the capital of France?",
-    llm=llm
+    llm=llm,
+    use_langfuse=False 
 )
 print(result.answer)  # "Paris"
 print(result.confidence)  # 1.0
@@ -71,7 +72,8 @@ result = prompt_parsing(
     query=["What is the capital of France?",
            "What is the capital of Germany?",
            "What is the capital of Italy?"],
-    llm=llm
+    llm=llm,
+    use_langfuse=False
 )
 for each in result:
     print(each.answer)
