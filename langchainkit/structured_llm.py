@@ -43,7 +43,7 @@ def prompt_parsing(model: Type[M],
                    failed_model: M,
                    query: Union[str, list[str]],
                    llm: BaseChatModel,
-                   use_langfuse: bool = True,
+                   use_langfuse: bool = False,
                    langfuse_user_id: str = 'user_1',
                    langfuse_session_id: Union[str, list[str]] = 'session_1',
                    max_concurrency: int = None) -> Union[M, list[M]]:

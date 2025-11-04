@@ -25,25 +25,32 @@ pip install langchainkit
 
 ## Quick Start
 
-### Basic Usage
+### Configuration
+
+Set up your environment variables in .env file:
+
+```bash
+DEEPSEEK_API_KEY=your deepseek api key
+MOONSHOT_API_KEY=...
+OPENROUTER_API_KEY=...
+ARK_API_KEY=...
+DASHSCOPE_API_KEY=...
+LOCAL_VLLM_BASE_URL=http://172.20.14.28:8000/v1
+LOCAL_VLLM_API_KEY=...
+
+LANGFUSE_SECRET_KEY=...
+LANGFUSE_PUBLIC_KEY=...
+LANGFUSE_HOST=...
+```
 
 ```python
+from langchainkit import GeneralLLM,prompt_parsing
+from pydantic import BaseModel
 from dotenv import load_dotenv
 
 load_dotenv() # load .env file
 
-from langchainkit import LocalLLM
-
-llm = LocalLLM.qwen3_14b_awq_think()
-res= llm.invoke('hello')
-print(res.content) # Hello! How can I assist you today? 😊
-```
-
-### Structured Output
-
-```python
-from langchainkit import prompt_parsing
-from pydantic import BaseModel
+llm = GeneralLLM.deepseek_chat()
 
 class Response(BaseModel):
     answer: str
@@ -77,17 +84,7 @@ for each in result:
 # 1.0
 ```
 
-## Configuration
 
-Set up your environment variables in .env file:
-
-```bash
-LOCAL_VLLM_BASE_URL=http://172.20.14.28:8000/v1
-LOCAL_VLLM_API_KEY=your vLLM api key
-LANGFUSE_SECRET_KEY=your langfuse secret key
-LANGFUSE_PUBLIC_KEY=your langfuse public key
-LANGFUSE_HOST=your langfuse host
-```
 
 ## License
 
