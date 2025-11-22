@@ -22,6 +22,7 @@ def prompt_parsing(
         use_langfuse: bool = ...,
         langfuse_user_id: str = ...,
         langfuse_session_id: Union[str, list[str]] = ...,
+        langfuse_tag: str = ...,
         max_concurrency: int = ...
 ) -> M: ...
 
@@ -35,6 +36,7 @@ def prompt_parsing(
         use_langfuse: bool = ...,
         langfuse_user_id: str = ...,
         langfuse_session_id: Union[str, list[str]] = ...,
+        langfuse_tag: str = ...,
         max_concurrency: int = ...
 ) -> List[M]: ...
 
@@ -46,6 +48,7 @@ def prompt_parsing(model: Type[M],
                    use_langfuse: bool = False,
                    langfuse_user_id: str = 'user_1',
                    langfuse_session_id: Union[str, list[str]] = 'session_1',
+                   langfuse_tag: str = 'langchain',
                    max_concurrency: int = None) -> Union[M, list[M]]:
     """
     Force LLM outputs to conform to a specified Pydantic model schema.
@@ -72,6 +75,8 @@ def prompt_parsing(model: Type[M],
     langfuse_session_id : str or list of str, optional
         Session identifier for Langfuse observability tracking. Default is "session_1".
         If it is a str, then all query will use same session_id
+    langfuse_tag : str, optional
+        Tags for Langfuse observability tracking. Default is "langchain".
     max_concurrency : int, optional
         Maximum number of concurrent requests for batch processing. If not
         provided, defaults to ``llm.max_concurrency``.
@@ -138,7 +143,7 @@ def prompt_parsing(model: Type[M],
                                     metadata={
                                         "langfuse_user_id": langfuse_user_id,
                                         "langfuse_session_id": session_id,
-                                        "langfuse_tags": ["langchain"]
+                                        "langfuse_tags": [langfuse_tag]
                                     }))
     elif isinstance(langfuse_session_id,str) and isinstance(query,list):
         invoke_configs = [RunnableConfig(max_concurrency=max_concurrency,
@@ -146,7 +151,7 @@ def prompt_parsing(model: Type[M],
                                     metadata={
                                         "langfuse_user_id": langfuse_user_id,
                                         "langfuse_session_id": langfuse_session_id,
-                                        "langfuse_tags": ["langchain"]
+                                        "langfuse_tags": [langfuse_tag]
                                     }) for _ in query]
     else:
         invoke_configs = RunnableConfig(max_concurrency=max_concurrency,
@@ -154,7 +159,7 @@ def prompt_parsing(model: Type[M],
                                     metadata={
                                         "langfuse_user_id": langfuse_user_id,
                                         "langfuse_session_id": langfuse_session_id,
-                                        "langfuse_tags": ["langchain"]
+                                        "langfuse_tags": [langfuse_tag]
                                     })
     parser = PydanticOutputParser(pydantic_object=model)
 
