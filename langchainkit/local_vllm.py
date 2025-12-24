@@ -148,8 +148,8 @@ class GeneralLLM:
     _grok_4 = None
     _gemini_2_5_flash = None
     _qwen3_235b_think = None
-    _openrouter = None
-    _doubao_1_6 = None
+    _openrouter_clients = {}
+    _doubao_clients = {}
 
     @classmethod
     def deepseek_reasoner(cls) -> BaseChatModel:
@@ -180,10 +180,10 @@ class GeneralLLM:
         return cls._deepseek_chat
 
     @classmethod
-    def kimi_k2(cls) -> BaseChatModel:
+    def kimi(cls, model_name: str="kimi-k2-turbo-preview") -> BaseChatModel:
         if cls._kimi_k2 is None:
             cls._kimi_k2 = CustomChatOpenAI(
-                model="kimi-k2-0711-preview",
+                model=model_name,
                 api_key=os.getenv("MOONSHOT_API_KEY"),
                 base_url="https://api.moonshot.cn/v1",
                 streaming=True,
@@ -280,28 +280,32 @@ class GeneralLLM:
 
     @classmethod
     def openrouter(cls, model_name: str):
-        if cls._openrouter is None:
-            cls._openrouter = CustomChatOpenAI(
-            model=model_name,
-            api_key=os.getenv("OPENROUTER_API_KEY"),
-            base_url="https://openrouter.ai/api/v1",
-            streaming=True,
-            max_retries=5,
-            timeout=300
+        if model_name not in cls._openrouter_clients:
+            client = CustomChatOpenAI(
+                model=model_name,
+                api_key=os.getenv("OPENROUTER_API_KEY"),
+                base_url="https://openrouter.ai/api/v1",
+                streaming=True,
+                max_retries=5,
+                timeout=300,
             )
-            cls._openrouter.max_concurrency = 100
-        return cls._openrouter
+            client.max_concurrency = 100
+            cls._openrouter_clients[model_name] = client
+
+        return cls._openrouter_clients[model_name]
 
     @classmethod
-    def doubao_1_6(cls, model_name: str="doubao-seed-1-6-250615"):
-        if cls._doubao_1_6 is None:
-            cls._doubao_1_6 = CustomChatOpenAI(
-            model=model_name,
-            api_key=os.getenv("ARK_API_KEY"),
-            base_url="https://ark.cn-beijing.volces.com/api/v3",
-            streaming=True,
-            max_retries=5,
-            timeout=300
+    def doubao(cls, model_name: str = "doubao-seed-1-6-251015"):
+        if model_name not in cls._doubao_clients:
+            client = CustomChatOpenAI(
+                model=model_name,
+                api_key=os.getenv("ARK_API_KEY"),
+                base_url="https://ark.cn-beijing.volces.com/api/v3",
+                streaming=True,
+                max_retries=5,
+                timeout=300,
             )
-            cls._doubao_1_6.max_concurrency = 100
-        return cls._doubao_1_6
+            client.max_concurrency = 100
+            cls._doubao_clients[model_name] = client
+
+        return cls._doubao_clients[model_name]
