@@ -35,6 +35,7 @@ class LocalLLM:
     _qwen3_32b_think = None
     _qwen3_30b_a3b_think = None
     _qwen3_30b_a3b_instruct = None
+    _qwen3_clients = {}
 
     @classmethod
     def qwen3_14b_awq_think(cls) -> BaseChatModel:
@@ -104,10 +105,27 @@ class LocalLLM:
             cls._qwen3_30b_a3b_instruct.max_concurrency = 500
         return cls._qwen3_30b_a3b_instruct
 
+    @classmethod
+    def qwen3(cls, model_name: str = "Qwen3.5-35B-A3B"):
+        if model_name not in cls._qwen3_clients:
+            client = CustomChatDeepSeek(
+                model=model_name,
+                api_key=os.getenv("LOCAL_VLLM_API_KEY"),
+                api_base=os.getenv("LOCAL_VLLM_BASE_URL"),
+                streaming=True,
+                max_retries=5,
+                timeout=300,
+            )
+            client.max_concurrency = 100
+            cls._qwen3_clients[model_name] = client
+
+        return cls._qwen3_clients[model_name]
+
 
 class ApiLLM:
     _qwen3_235b_think = None
     _qwen3_235b_no_think = None
+    _qwen3_5_plus = None
 
     @classmethod
     def qwen3_235b_think(cls) -> BaseChatModel:
@@ -136,6 +154,19 @@ class ApiLLM:
             )
             cls._qwen3_235b_no_think.max_concurrency = 10
         return cls._qwen3_235b_no_think
+    
+    @classmethod
+    def qwen3_5_plus(cls) -> BaseChatModel:
+        if cls._qwen3_5_plus is None:
+            cls._qwen3_5_plus = CustomChatDeepSeek(
+                model="qwen3.5-plus",
+                api_key=os.getenv("DASHSCOPE_API_KEY"),
+                api_base="https://dashscope.aliyuncs.com/compatible-mode/v1",
+                streaming=True,
+                timeout=300
+            )
+            cls._qwen3_5_plus.max_concurrency = 10
+        return cls._qwen3_5_plus
 
 
 class GeneralLLM:
